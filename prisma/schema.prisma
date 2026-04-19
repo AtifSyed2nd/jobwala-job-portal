@@ -1,0 +1,68 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/client" // Mandatory in Prisma 7
+}
+
+datasource db {
+  provider = "postgresql"
+  // The URL is now managed in prisma.config.ts
+}
+
+enum Role {
+  CANDIDATE
+  RECRUITER
+  ADMIN
+  SUPER_ADMIN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  role      Role     @default(CANDIDATE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One-to-one relations
+  profile         Profile?
+  personalDetails PersonalDetails?
+  
+  // Job Portal specific relations
+  company      Company?      @relation(fields: [companyId], references: [id])
+  companyId    String?
+  applications Application[]
+}
+
+model Profile {
+  id              String  @id @default(cuid())
+  firstName       String
+  lastName        String
+  avatar          String?
+  profileTitle    String? // e.g., "Senior Fullstack Developer"
+  profileHeadline String? // Short bio
+  
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PersonalDetails {
+  id              String    @id @default(cuid())
+  address         String?
+  city            String?
+  state           String?
+  pinCode         Int?
+  country         String?
+  contact         String?
+  gender          String?
+  dob             DateTime?
+  currentLocation String?
+  maritalStatus   String?
+  languages       Json?     // { "english": "fluent", "urdu": "native" }
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
