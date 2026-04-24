@@ -1,0 +1,325 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // The URL is now managed in prisma.config.ts
+}
+
+enum Role {
+  CANDIDATE
+  RECRUITER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum EducationType {
+  TWELFTH
+  DIPLOMA
+  GRADUATION
+  POST_GRADUATION
+}
+
+enum NoticePeriod {
+  IMMEDIATE
+  FIFTEEN_DAYS
+  ONE_MONTH
+  TWO_MONTHS
+  THREE_MONTHS_PLUS
+}
+
+enum WorkplaceType {
+  REMOTE
+  HYBRID
+  ON_SITE
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  INTERNSHIP
+}
+
+enum SocialPlatform {
+  LINKEDIN
+  GITHUB
+  PORTFOLIO
+  WEBSITE
+  TWITTER
+  OTHER
+}
+
+model User {
+  id            String  @id @default(cuid())
+  name          String // Required by Better Auth core
+  email         String  @unique
+  emailVerified Boolean @default(false) // Required by Better Auth core
+  image         String? // Required by Better Auth core
+  password      String? // For email/password authentication
+
+  username  String   @unique
+  role      Role     @default(CANDIDATE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // --- Better Auth Relations ---
+  sessions Session[]
+  accounts Account[]
+
+  // --- Existing Relations ---
+  profile              Profile?
+  personalDetails      PersonalDetails?
+  resume               Resume?
+  candidatePreferences CandidatePreference?
+
+  employments        Employment[]
+  educations         Education[]
+  skills             Skill[]
+  languages          Language[]
+  professionalSkills ProfessionalSkill[]
+  projects           Project[]
+  socialLinks        SocialLink[]
+
+  companyId String?
+}
+
+// ==========================================
+// BETTER AUTH REQUIRED MODELS
+// ==========================================
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String? // Better Auth stores hashed email/passwords here
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+}
+
+model Profile {
+  id              String  @id @default(cuid())
+  firstName       String
+  lastName        String
+  avatar          String?
+  profileTitle    String? // e.g., "Senior Fullstack Developer"
+  profileHeadline String? // Short bio
+  description     String? // Detailed description/bio
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PersonalDetails {
+  id              String    @id @default(cuid())
+  address         String?
+  city            String?
+  state           String?
+  pinCode         Int?
+  country         String?
+  contact         String?
+  gender          String?
+  dob             DateTime?
+  currentLocation String?
+  maritalStatus   String?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Resume {
+  id         String   @id @default(cuid())
+  fileName   String
+  fileUrl    String?
+  uploadedAt DateTime @default(now())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Employment {
+  id              String          @id @default(cuid())
+  role            String // Job Title
+  company         String
+  companyLocation String?
+  salary          String? // LPA (Lakhs Per Annum)
+  joiningDate     DateTime?
+  leavingDate     DateTime?
+  isCurrent       Boolean         @default(false)
+  employmentType  EmploymentType?
+  noticePeriod    String?
+  description     String?
+  skillsUsed      String? // Comma-separated or JSON
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Education {
+  id            String         @id @default(cuid())
+  title         String // Degree/Course name
+  instituteName String
+  educationType EducationType?
+  grades        String? // CGPA or percentage
+  startDate     DateTime?
+  endDate       DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Skill {
+  id   String @id @default(cuid())
+  name String // Skill name like "React.js", "Node.js"
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Language {
+  id       String  @id @default(cuid())
+  name     String // Language name
+  canSpeak Boolean @default(false)
+  canRead  Boolean @default(false)
+  canWrite Boolean @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model ProfessionalSkill {
+  id         String    @id @default(cuid())
+  title      String
+  experience String? // e.g., "3 years", "6 months"
+  rating     Int? // 0-10 scale
+  lastUsed   DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  title       String
+  link        String?
+  isOngoing   Boolean   @default(false)
+  startDate   DateTime?
+  endDate     DateTime?
+  description String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model SocialLink {
+  id       String         @id @default(cuid())
+  platform SocialPlatform
+  url      String
+  username String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model CandidatePreference {
+  id                 String        @id @default(cuid())
+  openToJob          Boolean       @default(false)
+  isFresher          Boolean       @default(false)
+  currentRole        String?
+  careerStartDate    DateTime?
+  currentSalary      Int? // In LPA (Lakhs Per Annum)
+  expectedSalary     Int? // In LPA
+  noticePeriod       NoticePeriod?
+  preferredRoles     String? // Comma-separated
+  preferredLocations String? // Comma-separated
+  workplaceType      String? // CSV or JSON array: "Remote, Hybrid, On-site"
+  employmentType     String? // CSV or JSON array: "Full-time, Part-time, Contract"
+  preferredShiftTime String?
+  preferredIndustry  String? // Comma-separated
+  companyType        String? // CSV: "Product Based, Startup"
+  department         String?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

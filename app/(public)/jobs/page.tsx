@@ -80,7 +80,7 @@ export default async function SearchPage({
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-400">Sort by:</span>
               <Select defaultValue="relevance">
-                <SelectTrigger className="w-[140px] h-8 text-xs">
+                <SelectTrigger className="w-35 h-8 text-xs">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -94,9 +94,18 @@ export default async function SearchPage({
 
           {/* Job Feed */}
           <div className="grid grid-cols-1 gap-4">
-            {JOBS.map((job) => (
-              // Now this correctly passes the job object to the fixed JobCard
-              <JobCard key={job.id} job={job} />
+            {JOBS.map((jobData) => (
+              // Transform companyName to company for JobCard compatibility
+              <JobCard 
+                key={jobData.id} 
+                job={{
+                  title: jobData.title,
+                  company: jobData.companyName,
+                  location: jobData.location,
+                  type: jobData.type,
+                  salary: jobData.salary,
+                }} 
+              />
             ))}
           </div>
 

@@ -89,12 +89,14 @@ export default function Page() {
 function SidebarNav() {
   const links = [
     { name: "Profile", id: "profile-header" },
-    { name: "Job Preferences", id: "preferences" }, // Added for your multi-select section
     { name: "Resume", id: "resume" },
     { name: "Key Skills", id: "key-skills" },
+    { name: "Languages", id: "languages" },
     { name: "Employment", id: "employment" },
     { name: "Education", id: "education" },
-    { name: "IT Skills", id: "it-skills" }
+    { name: "Professional Skills", id: "professional-skills" },
+    { name: "Projects", id: "projects" },
+    { name: "Job Preferences", id: "preferences" }, // Added for your multi-select section
   ];
 
   return (

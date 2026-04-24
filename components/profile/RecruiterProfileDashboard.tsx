@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
+import { useRecruiterStore } from "@/app/store/useRecruiterStore";
 import { SectionCard } from "./SectionCard";
 import { DynamicFormModal, FormField } from "./forms/DynamicFormModal";
 import { ProfileHeader } from "./ProfileHeader";
-// 1. Import the new CompanyView instead of CandidatePreferencesView
 import { CompanyView } from "./sections/CompanyView";
 
 // --- Form Configurations ---
@@ -12,7 +13,7 @@ const PROFILE_FIELDS: FormField[] = [
   { name: "firstName", label: "First Name", type: "text" },
   { name: "lastName", label: "Last Name", type: "text" },
   { name: "title", label: "Professional Title", type: "text", colSpan: true },
-  { name: "description", label: "Short Bio", type: "text", colSpan: true },
+  { name: "description", label: "Short Bio", type: "textarea", colSpan: true },
 ];
 
 const PERSONAL_FIELDS: FormField[] = [
@@ -28,16 +29,46 @@ const PERSONAL_FIELDS: FormField[] = [
   },
 ];
 
+const SOCIAL_FIELDS: FormField[] = [
+  {
+    name: "platform",
+    label: "Platform",
+    type: "select",
+    options: ["LinkedIn", "Twitter", "GitHub", "Website"],
+    colSpan: true,
+  },
+  {
+    name: "url",
+    label: "Full URL",
+    type: "text",
+    colSpan: true,
+    placeholder: "https://...",
+  },
+];
+
 const COMPANY_FIELDS: FormField[] = [
   { name: "name", label: "Company Name", type: "text", colSpan: true },
-  { name: "location", label: "Headquarters", type: "text" },
-  { name: "website", label: "Website URL", type: "text" },
-  { name: "description", label: "Company Description", type: "textarea", colSpan: true },
+  { name: "website", label: "Website URL", type: "text" , colSpan: true},
+  { name: "location", label: "Headquarters", type: "textarea" , colSpan: true},
+  {
+    name: "description",
+    label: "Company Description",
+    type: "textarea",
+    colSpan: true,
+  },
   {
     name: "totalEmployee",
     label: "Company Size",
     type: "select",
-    options: ["1-15", "16-49", "50-249", "250-699", "700-1499", "1500-2999", "3000+"],
+    options: [
+      "1-15",
+      "16-49",
+      "50-249",
+      "250-699",
+      "700-1499",
+      "1500-2999",
+      "3000+",
+    ],
   },
   {
     name: "companyType",
@@ -49,26 +80,44 @@ const COMPANY_FIELDS: FormField[] = [
     name: "preferredIndustry",
     label: "Industry",
     type: "select",
-    options: ["IT & Services", "Marketing", "Engineering", "Finance", "Healthcare", "Other"],
+    options: [
+      "IT & Services",
+      "Marketing",
+      "Engineering",
+      "Finance",
+      "Healthcare",
+      "Other",
+    ],
   },
   {
     name: "department",
     label: "Hiring Departments",
-    type: "multiSelect", // Using your new multiSelect type
-    options: ["Engineering", "Design", "Marketing", "Sales", "HR", "Product", "Operations", "Other"],
+    type: "multiSelect",
+    options: [
+      "Engineering",
+      "Design",
+      "Marketing",
+      "Sales",
+      "HR",
+      "Product",
+      "Operations",
+      "Other",
+    ],
   },
 ];
 
 export function RecruitProfileDashboard({ initialData }: { initialData: any }) {
-  // 2. Renamed state for clarity
-  const [userData, setUserData] = useState(initialData.user || {});
-  const [socials, setSocials] = useState(initialData.socials || []);
-  const [companyDetails, setCompanyDetails] = useState<any>(initialData.companyDetails || null);
+  const store = useRecruiterStore();
 
-  const [activeModal, setActiveModal] = useState<"profile" | "personal" | "company" | "social" | null>(null);
+  // Hydrate only once on mount
+  useEffect(() => {
+    if (initialData) store.setInitialData(initialData);
+  }, []); // Empty dependency array to prevent loops
+
+  const [activeModal, setActiveModal] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<any>(null);
 
-  const openModal = (type: any, item: any = null) => {
+  const openModal = (type: string, item: any = null) => {
     setActiveItem(item);
     setActiveModal(type);
   };
@@ -78,71 +127,77 @@ export function RecruitProfileDashboard({ initialData }: { initialData: any }) {
     setActiveItem(null);
   };
 
-  // --- Handlers ---
-  const handleSaveUserData = async (data: any) => {
-    setUserData((prev: any) => ({ ...prev, ...data }));
+  const handleSave = (data: any) => {
+    if (!activeModal) return;
+
+    switch (activeModal) {
+      case "profile":
+      case "personal":
+        store.updateProfile(data);
+        toast.success("Recruiter profile updated.");
+        break;
+      case "company":
+        store.setCompanyDetails(data);
+        toast.success("Company information saved.");
+        break;
+      case "social":
+        store.upsertSocial(data);
+        toast.success(`${data.platform} linked successfully.`);
+        break;
+    }
     closeModal();
   };
 
-  const handleSaveCompany = async (data: any) => {
-    // No numeric conversions needed here like in the Candidate dashboard
-    setCompanyDetails(data);
-    closeModal();
+  const getModalConfig = () => {
+    switch (activeModal) {
+      case "profile":
+        return { fields: PROFILE_FIELDS, title: "Edit Header" };
+      case "personal":
+        return { fields: PERSONAL_FIELDS, title: "Personal Details" };
+      case "company":
+        return { fields: COMPANY_FIELDS, title: "Company Details" };
+      case "social":
+        return { fields: SOCIAL_FIELDS, title: "Social Profiles" };
+      default:
+        return { fields: [], title: "" };
+    }
   };
 
-  const handleDeleteSocial = (platform: string) => {
-    setSocials(socials.filter((s: any) => s.platform !== platform));
-  };
-
-  // 3. Updated switch logic to handle "company"
-  let activeFields: FormField[] = [];
-  let handleActiveSave: (data: any) => void = () => {};
-
-  switch (activeModal) {
-    case "profile":
-      activeFields = PROFILE_FIELDS;
-      handleActiveSave = handleSaveUserData;
-      break;
-    case "personal":
-      activeFields = PERSONAL_FIELDS;
-      handleActiveSave = handleSaveUserData;
-      break;
-    case "company":
-      activeFields = COMPANY_FIELDS;
-      handleActiveSave = handleSaveCompany;
-      break;
-  }
+  const { fields, title } = getModalConfig();
 
   return (
     <div className="flex-1 space-y-6">
       <ProfileHeader
         id="profile-header"
         profileType="recruiter"
-        user={{ ...userData, socials }}
-        onEditProfile={() => openModal("profile", userData)}
-        onEditPersonalDetails={() => openModal("personal", userData)}
+        user={{ ...store.profile, socials: store.socials }}
+        onEditProfile={() => openModal("profile", store.profile)}
+        onEditPersonalDetails={() => openModal("personal", store.profile)}
         onEditSocials={() => openModal("social")}
-        onDeleteSocial={handleDeleteSocial}
+        onDeleteSocial={(platform) => {
+          store.removeSocial(platform);
+          toast.error(`${platform} removed.`);
+        }}
       />
 
-      {/* 4. Use SectionCard to render the new CompanyView */}
       <SectionCard
         id="company-info"
         title="Company Profile"
-        actionLabel={companyDetails ? "Edit Company" : "Add Company"}
-        onAction={() => openModal("company", companyDetails)}
+        actionLabel={store.companyDetails ? "Edit Company" : "Add Company"}
+        onAction={() => openModal("company", store.companyDetails)}
       >
-        <CompanyView data={companyDetails} />
+        <CompanyView data={store.companyDetails} />
       </SectionCard>
 
       <DynamicFormModal
-        title={activeModal === "company" ? "Manage Company Details" : `Edit ${activeModal}`}
+        title={title}
         isOpen={activeModal !== null}
         onClose={closeModal}
-        onSave={handleActiveSave}
-        fields={activeFields}
-        // Ensure companyDetails is passed as initialData when the company modal is open
-        initialData={activeModal === "company" ? companyDetails : activeItem}
+        onSave={handleSave}
+        fields={fields}
+        initialData={
+          activeModal === "company" ? store.companyDetails : activeItem
+        }
       />
     </div>
   );

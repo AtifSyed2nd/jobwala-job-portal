@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -28,14 +29,14 @@ export type FieldType =
   | "checkbox"
   | "switch"
   | "multiSelect"
-  | "selectMonthYear" // New: { month: "Jan", year: "2024" }
-  | "spendMonthYear"; // New: { years: 4, months: 6 }
+  | "selectMonthYear"
+  | "spendMonthYear";
 
 export interface FormField {
   name: string;
   label: string;
   type: FieldType;
-  options?: string[]; // Used for select and radio
+  options?: string[];
   placeholder?: string;
   colSpan?: boolean;
 }
@@ -44,7 +45,7 @@ interface DynamicFormModalProps {
   title: string;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: any) => Promise<void>;
+  onSave: (data: any) => Promise<void> | void; // Allow both sync and async saves
   initialData?: any;
   fields: FormField[];
 }
@@ -64,8 +65,8 @@ const MONTHS = [
   "Nov",
   "Dec",
 ];
+
 const currentYear = new Date().getFullYear();
-// Generate years from 20 years ago to 10 years in the future
 const YEARS = Array.from({ length: 31 }, (_, i) =>
   (currentYear - 20 + i).toString(),
 );
@@ -91,12 +92,37 @@ export function DynamicFormModal({
     setFormData((prev: any) => ({ ...prev, [name]: value }));
   };
 
+  const validateForm = (): boolean => {
+    // Check required fields (fields without type "switch" and "checkbox" that are marked as required)
+    const requiredFields = fields.filter(f => !["switch", "checkbox"].includes(f.type));
+    const errors: string[] = [];
+
+    for (const field of requiredFields) {
+      const value = formData[field.name];
+      if (!value || (typeof value === 'string' && value.trim() === '') || (Array.isArray(value) && value.length === 0)) {
+        errors.push(field.label);
+      }
+    }
+
+    if (errors.length > 0) {
+      toast.error(`Please fill all required fields: ${errors.join(", ")}`);
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
       await onSave(formData);
+      toast.success("Changes saved successfully!");
     } catch (error) {
       console.error("Save failed", error);
+      toast.error("Failed to save changes. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -104,7 +130,7 @@ export function DynamicFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto bg-slate-50/50 backdrop-blur-sm">
+      <DialogContent className="sm:max-w-162.5 max-h-[90vh] overflow-y-auto bg-slate-50/50 backdrop-blur-sm">
         <DialogHeader className="pb-4 border-b border-slate-200">
           <DialogTitle className="text-xl font-bold text-slate-800">
             {title}
@@ -120,7 +146,6 @@ export function DynamicFormModal({
               key={field.name}
               className={`space-y-2.5 ${field.colSpan ? "md:col-span-2" : ""}`}
             >
-              {/* Handle layout for Switch and Checkbox (Label is usually on the right or inside) */}
               {field.type !== "switch" && field.type !== "checkbox" && (
                 <Label
                   htmlFor={field.name}
@@ -137,7 +162,7 @@ export function DynamicFormModal({
                   value={formData[field.name] || ""}
                   onChange={(e) => handleChange(field.name, e.target.value)}
                   placeholder={field.placeholder}
-                  className="resize-none min-h-[100px] bg-white transition-all focus-visible:ring-blue-500"
+                  className="resize-none min-h-25 bg-white transition-all focus-visible:ring-blue-500"
                 />
               )}
 
@@ -160,7 +185,7 @@ export function DynamicFormModal({
                 </select>
               )}
 
-              {/* NEW: Select Month & Year (Start/End dates) */}
+              {/* Select Month & Year */}
               {field.type === "selectMonthYear" && (
                 <div className="flex gap-3">
                   <select
@@ -204,7 +229,7 @@ export function DynamicFormModal({
                 </div>
               )}
 
-              {/* NEW: Spend Month & Year (Experience duration) */}
+              {/* Spend Month & Year */}
               {field.type === "spendMonthYear" && (
                 <div className="flex gap-4 items-center">
                   <div className="flex-1 flex items-center gap-2">
@@ -272,7 +297,7 @@ export function DynamicFormModal({
                 </RadioGroup>
               )}
 
-              {/* Checkbox (Single Boolean) */}
+              {/* Checkbox */}
               {field.type === "checkbox" && (
                 <div className="flex items-center space-x-3 pt-2">
                   <Checkbox
@@ -292,7 +317,7 @@ export function DynamicFormModal({
                 </div>
               )}
 
-              {/* Switch (Shadcn Toggle) */}
+              {/* Switch */}
               {field.type === "switch" && (
                 <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-slate-300">
                   <Label
@@ -319,20 +344,27 @@ export function DynamicFormModal({
                 </div>
               )}
 
+              {/* MULTI-SELECT FIX */}
               {field.type === "multiSelect" && (
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium text-slate-700">
-                    {/* {field.label} */}
-                  </label>
                   <div className="flex flex-wrap gap-2">
                     {field.options?.map((option) => {
-                      // Assuming 'formData' holds your current form state
-                      // We treat the stored value as a comma-separated string
-                      const currentValue = formData[field.name] || "";
-                      const selectedOptions = currentValue
-                        .split(",")
-                        .map((s: string) => s.trim())
-                        .filter(Boolean);
+                      // Safely handle arrays, strings, or undefined values
+                      const rawValue = formData[field.name];
+                      let selectedOptions: string[] = [];
+
+                      if (Array.isArray(rawValue)) {
+                        selectedOptions = rawValue;
+                      } else if (
+                        typeof rawValue === "string" &&
+                        rawValue.trim() !== ""
+                      ) {
+                        selectedOptions = rawValue
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                      }
+
                       const isSelected = selectedOptions.includes(option);
 
                       return (
@@ -342,19 +374,16 @@ export function DynamicFormModal({
                           onClick={() => {
                             let newSelection;
                             if (isSelected) {
-                              // Remove it
+                              // Remove option
                               newSelection = selectedOptions.filter(
-                                (item: string) => item !== option,
+                                (item) => item !== option,
                               );
                             } else {
-                              // Add it
+                              // Add option
                               newSelection = [...selectedOptions, option];
                             }
-                            // Save it back to state as a comma-separated string
-                            setFormData({
-                              ...formData,
-                              [field.name]: newSelection.join(", "),
-                            });
+                            // Save as an ARRAY
+                            handleChange(field.name, newSelection);
                           }}
                           className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
                             isSelected
@@ -370,7 +399,7 @@ export function DynamicFormModal({
                 </div>
               )}
 
-              {/* Standard Inputs: Text, Number, Date, DateTime */}
+              {/* Standard Inputs */}
               {(field.type === "text" ||
                 field.type === "number" ||
                 field.type === "date" ||
@@ -402,7 +431,7 @@ export function DynamicFormModal({
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="bg-blue-600 hover:bg-blue-700 text-white min-w-[120px] shadow-sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white min-w-30 shadow-sm"
           >
             {isSubmitting ? "Saving..." : "Save Changes"}
           </Button>

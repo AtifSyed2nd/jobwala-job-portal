@@ -25,11 +25,7 @@ export interface CompanyData {
   department: string; // Comma-separated string from multiSelect
 }
 
-export function CompanyView({
-  data,
-}: {
-  data?: CompanyData | null;
-}) {
+export function CompanyView({ data }: { data?: CompanyData | null }) {
   if (!data) {
     return (
       <p className="text-sm text-slate-500 italic p-4 text-center border-2 border-dashed rounded-xl">
@@ -39,9 +35,11 @@ export function CompanyView({
   }
 
   const renderTags = (commaSeparatedString?: string) => {
-    if (!commaSeparatedString || commaSeparatedString.trim() === "")
+    if (!commaSeparatedString || typeof commaSeparatedString !== 'string' || commaSeparatedString.trim() === "")
       return (
-        <span className="text-xs text-slate-400 italic">No departments listed</span>
+        <span className="text-xs text-slate-400 italic">
+          No departments listed
+        </span>
       );
 
     return (
@@ -71,11 +69,12 @@ export function CompanyView({
           </h4>
           <div className="flex items-center gap-3 mt-1">
             <span className="flex items-center gap-1 text-xs font-medium text-slate-500">
-              <MapPin className="w-3 h-3" /> {data.location || "Location not set"}
+              <MapPin className="w-3 h-3" />{" "}
+              {data.location || "Location not set"}
             </span>
             <span className="w-1 h-1 bg-slate-300 rounded-full" />
             <span className="flex items-center gap-1 text-xs font-medium text-indigo-600 hover:underline">
-              <Globe className="w-3 h-3" /> 
+              <Globe className="w-3 h-3" />
               <a href={data.website} target="_blank" rel="noreferrer">
                 {data.website ? "Visit Website" : "No Website"}
               </a>
@@ -84,7 +83,9 @@ export function CompanyView({
         </div>
         <div className="hidden md:flex items-center gap-1 px-3 py-1 bg-green-50 border border-green-100 rounded-full">
           <CheckCircle2 className="w-3 h-3 text-green-600" />
-          <span className="text-[10px] font-bold text-green-700 uppercase">Verified Recruiter</span>
+          <span className="text-[10px] font-bold text-green-700 uppercase">
+            Verified Recruiter
+          </span>
         </div>
       </div>
 
@@ -111,7 +112,11 @@ export function CompanyView({
           <DetailRow
             icon={<Users />}
             label="Company Size"
-            value={data.totalEmployee ? `${data.totalEmployee} Employees` : "Not specified"}
+            value={
+              data.totalEmployee
+                ? `${data.totalEmployee} Employees`
+                : "Not specified"
+            }
           />
           <DetailRow
             icon={<Layers />}
@@ -174,12 +179,12 @@ function DetailRow({
           {label}
         </p>
         {isLink && value ? (
-          <a 
-            href={value} 
-            target="_blank" 
+          <a
+            href={value}
+            target="_blank"
             className="text-xs font-bold text-indigo-600 truncate block hover:underline"
           >
-            {value.replace(/^https?:\/\//, '')}
+            {value.replace(/^https?:\/\//, "")}
           </a>
         ) : (
           <p className="text-xs font-bold text-slate-800 truncate">
