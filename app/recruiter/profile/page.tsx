@@ -32,7 +32,7 @@ export default async function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-6">
+    <div className="min-h-screen bg-slate-50 p-6 lg:p-10 space-y-8 max-w-7xl mx-auto">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row gap-6">
           <aside className="w-full md:w-64 shrink-0">

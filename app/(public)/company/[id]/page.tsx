@@ -7,15 +7,20 @@ import {
   ExternalLink,
   Mail,
   ShieldCheck,
+  Target,
+  Trophy,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { JobCard } from "@/components/cards/JobCard";
+import { CompanyCard } from "@/components/cards/CompanyCard"; 
 import Link from "next/link";
+import { JobCard } from "@/components/cards/JobCard";
 
 /**
- * MOCK DATA
+ * UPDATED MOCK DATA
+ * Added mission, culture, and impacts for a more professional profile.
  */
 const MOCK_COMPANY = {
   id: "1",
@@ -25,7 +30,13 @@ const MOCK_COMPANY = {
   website: "www.psrtek.com",
   employees: "501-1,000",
   founded: "2012",
-  description: `PSRTEK is a leading technology solutions provider specializing in UI/UX development, Cloud infrastructure, and enterprise-grade React applications.`,
+  mission: "To empower businesses through cutting-edge digital transformation.",
+  description: `PSRTEK is a leading technology solutions provider specializing in UI/UX development, Cloud infrastructure, and enterprise-grade React applications. We bridge the gap between complex business requirements and intuitive user experiences.`,
+  impacts: [
+    { label: "Global Clients", value: "200+", icon: Globe },
+    { label: "Projects Delivered", value: "1.2k", icon: Zap },
+    { label: "Awards Won", value: "15", icon: Trophy },
+  ],
   openJobs: [
     {
       id: "101",
@@ -89,11 +100,32 @@ export default async function CompanyDetailPage({
       <main className="max-w-7xl mx-auto px-4 mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <section className="bg-white rounded-xl border p-6">
+            
+            {/* 1. Enhanced About Section */}
+            <section className="bg-white rounded-xl border p-8 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <Target className="text-blue-600" size={20} /> Our Mission
+              </h2>
+              <p className="text-lg text-slate-700 italic mb-6">"{company.mission}"</p>
+              
               <h2 className="text-xl font-bold text-slate-900 mb-4">About the Company</h2>
               <p className="text-slate-600 leading-relaxed whitespace-pre-line">{company.description}</p>
             </section>
 
+            {/* 2. Impact Section */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {company.impacts.map((item, index) => (
+                <div key={index} className="bg-white p-6 rounded-xl border text-center shadow-sm">
+                  <div className="mx-auto w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-3">
+                    <item.icon size={20} />
+                  </div>
+                  <div className="text-2xl font-bold text-slate-900">{item.value}</div>
+                  <div className="text-sm text-slate-500 font-medium">{item.label}</div>
+                </div>
+              ))}
+            </section>
+
+            {/* 3. Open Vacancies Section */}
             <section>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-slate-900">Open Vacancies</h2>
@@ -104,15 +136,13 @@ export default async function CompanyDetailPage({
                 {company.openJobs.map((job) => (
                   <JobCard
                     key={job.id}
-                    hrefType="jobs"
-                    // ✅ FIXED: Changed 'job' to 'data' to match your JobCard component
-                    jobs={{
-                      id: job.id,
-                      title: job.title,
-                      company: company.name,
+                    hrefType="companies" 
+                    data={{
+                      id: company.id,
+                      name: company.name,
+                      industry: company.industry,
                       location: job.location,
-                      type: job.type,
-                      salary: job.salary,
+                      openJobsCount: company.openJobs.length,
                     }}
                   />
                 ))}
@@ -122,7 +152,7 @@ export default async function CompanyDetailPage({
 
           {/* Sidebar */}
           <aside className="space-y-6">
-            <section className="bg-white rounded-xl border p-6">
+            <section className="bg-white rounded-xl border p-6 shadow-sm sticky top-24">
               <h3 className="font-bold text-slate-900 mb-4">Company Overview</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
@@ -138,7 +168,9 @@ export default async function CompanyDetailPage({
               <div className="space-y-3">
                 <p className="text-sm font-bold text-slate-900">Contact Information</p>
                 <div className="flex items-center gap-3 text-sm text-slate-600">
-                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400"><Mail size={16} /></div>
+                  <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                    <Mail size={16} />
+                  </div>
                   careers@psrtek.com
                 </div>
               </div>

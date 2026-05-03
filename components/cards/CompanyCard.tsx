@@ -30,7 +30,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2 mb-1">
-              <Link href={`/companys/${company.id}`}>
+              <Link href={`/company/${company.id}`}>
                 <h3 className="font-bold text-xl text-slate-900 truncate hover:text-blue-600 transition-colors">
                   {company.name}
                 </h3>
@@ -60,7 +60,7 @@ export function CompanyCard({ company }: CompanyCardProps) {
       
       <CardFooter className="bg-slate-50/50 py-3 flex justify-end border-t">
         <Link 
-          href={`/companys/${company.id}`}
+          href={`/company/${company.id}`}
           className={cn(
             buttonVariants({ variant: "ghost", size: "sm" }),
             "text-blue-600 hover:text-blue-700 hover:bg-blue-50 gap-2"
