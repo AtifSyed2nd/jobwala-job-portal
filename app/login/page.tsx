@@ -14,7 +14,6 @@ export default function LoginPage() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,130 +21,120 @@ export default function LoginPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Basic validation
     if (!form.email || !form.password) {
       setError("Email and password are required");
       return;
     }
 
-    try {
-      setLoading(true);
-      setError("");
+    setLoading(true);
+    setError("");
 
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data?.message || "Invalid credentials");
-        return;
-      }
-
-      // ✅ Safe redirect
-      const safeRedirects = [
-        "/candidate/profile",
-        "/recruiter/profile",
-        "/admin",
-      ];
-
-      const redirect = data?.data?.redirectUrl;
-
-      router.push(safeRedirects.includes(redirect) ? redirect : "/");
-
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
-    } finally {
+    // Simulate a network delay for the UI feel
+    setTimeout(() => {
       setLoading(false);
-    }
+
+      // MOCK LOGIC: 
+      // Redirect to admin if 'admin' is in email, otherwise go to candidate profile
+      if (form.email.includes("admin")) {
+        router.push("/admin");
+      } else if (form.email.includes("recruiter")) {
+        router.push("/recruiter/profile");
+      } else {
+        router.push("/candidate/profile");
+      }
+    }, 1000);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-md bg-white p-6 rounded-2xl shadow-md space-y-5"
+        className="w-full max-w-md bg-white p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6"
       >
         {/* Title */}
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-800">Welcome back</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Login to your account
+          <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
+          <p className="text-sm text-slate-500 mt-2">
+            Enter your credentials to access your account
           </p>
         </div>
 
-        {/* Email */}
-        <div>
-          <input
-            type="email"
-            placeholder="Email address"
-            value={form.email}
-            onChange={(e) => handleChange("email", e.target.value)}
-            disabled={loading}
-            className="w-full border border-slate-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        {/* Form Inputs */}
+        <div className="space-y-4">
+          {/* Email */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 uppercase mb-1.5 ml-1">
+              Email Address
+            </label>
+            <input
+              type="email"
+              placeholder="e.g. admin@jobportal.app"
+              value={form.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              disabled={loading}
+              className="w-full border border-slate-200 p-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-slate-50 focus:bg-white"
+            />
+          </div>
 
-        {/* Password with Toggle */}
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            value={form.password}
-            onChange={(e) => handleChange("password", e.target.value)}
-            disabled={loading}
-            className="w-full border border-slate-300 p-2.5 pr-10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          <button
-            type="button"
-            onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
-          >
-            {showPassword ? (
-              <EyeOff className="w-4 h-4" />
-            ) : (
-              <Eye className="w-4 h-4" />
-            )}
-          </button>
+          {/* Password */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 uppercase mb-1.5 ml-1">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={form.password}
+                onChange={(e) => handleChange("password", e.target.value)}
+                disabled={loading}
+                className="w-full border border-slate-200 p-3 pr-10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-slate-50 focus:bg-white"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Forgot Password */}
         <div className="flex justify-end">
           <Link
             href="/forgot-password"
-            className="text-xs text-blue-600 hover:underline"
+            className="text-xs font-semibold text-blue-600 hover:text-blue-700"
           >
             Forgot password?
           </Link>
         </div>
 
-        {/* Error */}
+        {/* Error Display */}
         {error && (
-          <p className="text-red-500 text-sm bg-red-50 p-2 rounded">
+          <div className="bg-red-50 border border-red-100 text-red-600 text-xs p-3 rounded-lg font-medium">
             {error}
-          </p>
+          </div>
         )}
 
-        {/* Button */}
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-medium transition disabled:opacity-50"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-bold shadow-md shadow-blue-200 transition-all active:scale-[0.98] disabled:opacity-50"
         >
-          {loading ? "Logging in..." : "Login"}
+          {loading ? "Authenticating..." : "Sign In"}
         </button>
 
-        {/* Register */}
-        <p className="text-sm text-center text-slate-500">
+        {/* Footer Link */}
+        <p className="text-sm text-center text-slate-500 pt-2">
           Don’t have an account?{" "}
-          <Link href="/register" className="text-blue-600 hover:underline">
+          <Link href="/register" className="text-blue-600 font-bold hover:underline">
             Create one
           </Link>
         </p>

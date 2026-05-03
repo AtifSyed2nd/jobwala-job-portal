@@ -3,6 +3,10 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useCandidateStore } from "@/app/store/useCandidateStore";
+import {
+  useUpdateProfile,
+  useUpdatePersonalDetails,
+} from "@/hooks/queries/useCandidateProfile";
 
 // UI Components (Ensure these paths match your folder structure)
 import { SectionCard } from "./SectionCard";

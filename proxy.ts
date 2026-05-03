@@ -6,7 +6,7 @@ export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const isAuthPage =
-    pathname.startsWith("/login") || pathname.startsWith("/register");
+    pathname.startsWith("/recruiter") || pathname.startsWith("/candidate");
 
   const isAdminRoute = pathname.startsWith("/admin");
   const isRecruiterRoute = pathname.startsWith("/recruiter");
@@ -15,47 +15,47 @@ export function proxy(req: NextRequest) {
   // ============================================================
   // 🚫 NO TOKEN
   // ============================================================
-  if (!token) {
-    if (isAdminRoute || isRecruiterRoute || isCandidateRoute) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-    return NextResponse.next();
-  }
+  // if (!token) {
+  //   if (isAdminRoute || isRecruiterRoute || isCandidateRoute) {
+  //     return NextResponse.redirect(new URL("/login", req.url));
+  //   }
+  //   return NextResponse.next();
+  // }
 
   // ============================================================
   // 🔐 VERIFY TOKEN
   // ============================================================
-  const decoded = verifyToken(token);
+  // const decoded = verifyToken(token);
 
-  if (!decoded) {
-    const res = NextResponse.redirect(new URL("/login", req.url));
-    res.cookies.delete("auth_token");
-    return res;
-  }
+  // if (!decoded) {
+  //   const res = NextResponse.redirect(new URL("/login", req.url));
+  //   res.cookies.delete("auth_token");
+  //   return res;
+  // }
 
-  const { role } = decoded;
+  // const { role } = decoded;
 
   // ============================================================
   // 🚫 BLOCK AUTH PAGES IF LOGGED IN
   // ============================================================
-  if (isAuthPage) {
-    return NextResponse.redirect(new URL(getHomeByRole(role), req.url));
-  }
+  // if (isAuthPage) {
+  //   return NextResponse.redirect(new URL(getHomeByRole(role), req.url));
+  // }
 
   // ============================================================
   // 🔐 ROLE-BASED ACCESS
   // ============================================================
-  if (isAdminRoute && !["ADMIN", "SUPER_ADMIN"].includes(role)) {
-    return NextResponse.redirect(new URL(getHomeByRole(role), req.url));
-  }
+  // if (isAdminRoute && !["ADMIN", "SUPER_ADMIN"].includes(role)) {
+  //   return NextResponse.redirect(new URL(getHomeByRole(role), req.url));
+  // }
 
-  if (isRecruiterRoute && role !== "RECRUITER") {
-    return NextResponse.redirect(new URL(getHomeByRole(role), req.url));
-  }
+  // if (isRecruiterRoute && role !== "RECRUITER") {
+  //   return NextResponse.redirect(new URL(getHomeByRole(role), req.url));
+  // }
 
-  if (isCandidateRoute && role !== "CANDIDATE") {
-    return NextResponse.redirect(new URL(getHomeByRole(role), req.url));
-  }
+  // if (isCandidateRoute && role !== "CANDIDATE") {
+  //   return NextResponse.redirect(new URL(getHomeByRole(role), req.url));
+  // }
 
   return NextResponse.next();
 }

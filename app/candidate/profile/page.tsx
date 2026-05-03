@@ -1,75 +1,81 @@
 "use client";
 
 import { ProfileDashboard } from "@/components/profile/ProfileDashboard";
-
+import { useCandidateProfile } from "@/hooks/queries/useCandidateProfile";
+import { mapCandidateProfile } from "@/lib/mappers/mapCandidate";
 export default function Page() {
   // Mock data - In the future, this comes from: await getCandidateProfile()
-  const initialData = {
-    user: { 
-      firstName: "John", 
-      lastName: "Smith", 
-      role: "Fullstack Developer", 
-      company: "LoCo Tech", 
-      title: "Senior Fullstack Developer", 
-      desc: "A full-stack developer with 3+ years experience specializing in React and Node.js.", 
-      dob: "2001-02-01", 
-      location: "Pune, India", 
-      maritalStatus: "Single", 
-      contact: "9876543210", 
-      email: "atif123@gmail.com" 
-    },
-    // --- ADDED PREFERENCES OBJECT FOR MULTI-SELECT SUPPORT ---
-    preferences: {
-      openToJob: true,
-      isFresher: false,
-      currentRole: "Fullstack Developer",
-      experience: { years: 3, months: 6 },
-      careerStartDate: { month: "June", year: "2021" },
-      currentSalary: 8,
-      expectedSalary: 12,
-      noticePeriod: "1 Month",
-      preferredRoles: "Fullstack Developer, Frontend Engineer, Lead Dev",
-      preferredLocations: "Pune, Bangalore, Remote",
-      workplaceType: "Remote, Hybrid", // Multi-select string
-      employmentType: "Full-time, Contract", // Multi-select string
-      preferredShiftTime: "Day Shift",
-      preferredIndustry: "IT & Services, Finance",
-      companyType: "Product Based, Startup",
-      department: "Engineering"
-    },
-    resume: { name: "john_Resume.pdf", date: "Mar 05, 2025" },
-    skills: ["React.js", "Next.js", "Node.js", "Tailwind CSS"],
-    employments: [
-      {
-        id: "1",
-        role: "Fullstack Web Developer",
-        company: "LoCoSys",
-        companyLocation: "Pune, India",
-        salary: "8.0",
-        joiningDate: "2024-01-01", 
-        leavingDate: "Present",
-        employmentType: "Full-time",
-        skilledUsed: "Django Rest API, React.js, Next.js",
-        noticePeriod: "15 to 30 Days",
-        description: "Full-stack developer with 3+ years experience in development."
-      }
-    ],
-    educations: [
-      {
-        id: "1",
-        title: "B.Tech in Computer Science",
-        insituteName: "Pune University",
-        companyLocation: "Pune, India",
-        startDate: "2018",
-        endDate: "2022",
-        educationType: "Graduation",
-        greads: "8.5 CGPA"
-      }
-    ],
-    itSkills: [
-      { id: "1", name: "Django Rest API", version: "-", lastUsed: "2024", experience: "0.6 Yrs" }
-    ]
-  };
+  // const initialData = {
+  //   user: { 
+  //     firstName: "John", 
+  //     lastName: "Smith", 
+  //     role: "Fullstack Developer", 
+  //     company: "LoCo Tech", 
+  //     title: "Senior Fullstack Developer", 
+  //     desc: "A full-stack developer with 3+ years experience specializing in React and Node.js.", 
+  //     dob: "2001-02-01", 
+  //     location: "Pune, India", 
+  //     maritalStatus: "Single", 
+  //     contact: "9876543210", 
+  //     email: "atif123@gmail.com" 
+  //   },
+  //   // --- ADDED PREFERENCES OBJECT FOR MULTI-SELECT SUPPORT ---
+  //   preferences: {
+  //     openToJob: true,
+  //     isFresher: false,
+  //     currentRole: "Fullstack Developer",
+  //     experience: { years: 3, months: 6 },
+  //     careerStartDate: { month: "June", year: "2021" },
+  //     currentSalary: 8,
+  //     expectedSalary: 12,
+  //     noticePeriod: "1 Month",
+  //     preferredRoles: "Fullstack Developer, Frontend Engineer, Lead Dev",
+  //     preferredLocations: "Pune, Bangalore, Remote",
+  //     workplaceType: "Remote, Hybrid", // Multi-select string
+  //     employmentType: "Full-time, Contract", // Multi-select string
+  //     preferredShiftTime: "Day Shift",
+  //     preferredIndustry: "IT & Services, Finance",
+  //     companyType: "Product Based, Startup",
+  //     department: "Engineering"
+  //   },
+  //   resume: { name: "john_Resume.pdf", date: "Mar 05, 2025" },
+  //   skills: ["React.js", "Next.js", "Node.js", "Tailwind CSS"],
+  //   employments: [
+  //     {
+  //       id: "1",
+  //       role: "Fullstack Web Developer",
+  //       company: "LoCoSys",
+  //       companyLocation: "Pune, India",
+  //       salary: "8.0",
+  //       joiningDate: "2024-01-01", 
+  //       leavingDate: "Present",
+  //       employmentType: "Full-time",
+  //       skilledUsed: "Django Rest API, React.js, Next.js",
+  //       noticePeriod: "15 to 30 Days",
+  //       description: "Full-stack developer with 3+ years experience in development."
+  //     }
+  //   ],
+  //   educations: [
+  //     {
+  //       id: "1",
+  //       title: "B.Tech in Computer Science",
+  //       insituteName: "Pune University",
+  //       companyLocation: "Pune, India",
+  //       startDate: "2018",
+  //       endDate: "2022",
+  //       educationType: "Graduation",
+  //       greads: "8.5 CGPA"
+  //     }
+  //   ],
+  //   itSkills: [
+  //     { id: "1", name: "Django Rest API", version: "-", lastUsed: "2024", experience: "0.6 Yrs" }
+  //   ]
+  // };
+ const { data, isLoading } = useCandidateProfile();
+
+  if (isLoading) return <div>Loading...</div>;
+
+  const mappedData = mapCandidateProfile(data);
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-6">
@@ -79,7 +85,7 @@ export default function Page() {
             <SidebarNav />
           </div>
 
-          <ProfileDashboard initialData={initialData} />
+          <ProfileDashboard initialData={mappedData} />
         </div>
       </div>
     </div>

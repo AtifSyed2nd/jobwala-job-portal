@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -16,7 +16,12 @@ import {
   X,
   Menu,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+
+// Mock data to replace backend response
+const mockUser = {
+  name: "Admin User",
+  role: "SUPER_ADMIN",
+};
 
 export default function AdminLayout({
   children,
@@ -24,45 +29,13 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-
   const pathname = usePathname();
   const router = useRouter();
 
-  const { user, loading, refetchUser } = useAuth();
-
-  // ✅ AUTH GUARD (no flicker)
-  useEffect(() => {
-    if (loading) return;
-
-    const isAdmin =
-      user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-
-    if (!user || !isAdmin) {
-      router.replace("/login");
-    }
-  }, [user, loading, router]);
-
-  // ⛔ Block render until auth resolved
-  if (loading) return null;
-
-  const isAdmin =
-    user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-
-  if (!user || !isAdmin) return null;
-
-  // ✅ Logout (clean)
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      await refetchUser(); // ✅ clears global state
-      router.replace("/login");
-    } catch (err) {
-      console.error("Logout failed", err);
-    }
+  // Static logout handler
+  const handleLogout = () => {
+    // Simply redirect to login for static UI purposes
+    router.replace("/login");
   };
 
   const navItems = [
@@ -125,10 +98,8 @@ export default function AdminLayout({
         {/* NAV */}
         <nav className="mt-6 px-4 space-y-1.5">
           {navItems.map((item) => {
-            // ✅ better active detection
             const isActive =
-              pathname === item.href ||
-              pathname.startsWith(item.href + "/");
+              pathname === item.href || pathname.startsWith(item.href + "/");
 
             return (
               <Link
@@ -142,12 +113,10 @@ export default function AdminLayout({
                       : "text-slate-600 hover:bg-slate-100"
                   }
                 `}
-                onClick={() => setSidebarOpen(false)} // ✅ close on mobile click
+                onClick={() => setSidebarOpen(false)}
               >
                 {item.icon}
-                <span className="text-sm font-semibold">
-                  {item.name}
-                </span>
+                <span className="text-sm font-semibold">{item.name}</span>
               </Link>
             );
           })}
@@ -169,7 +138,6 @@ export default function AdminLayout({
       <div className="flex-1 flex flex-col">
         {/* HEADER */}
         <header className="h-20 bg-white border-b flex items-center justify-between px-6">
-          {/* Mobile menu */}
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
@@ -187,14 +155,14 @@ export default function AdminLayout({
             />
           </div>
 
-          {/* Right */}
+          {/* Right Profile Info */}
           <div className="flex items-center gap-4">
             <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full">
               <Bell className="w-5 h-5" />
             </button>
 
             <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center font-bold">
-              {user.name?.charAt(0) || "A"}
+              {mockUser.name.charAt(0)}
             </div>
           </div>
         </header>
@@ -203,7 +171,7 @@ export default function AdminLayout({
         <main className="p-4">{children}</main>
       </div>
 
-      {/* OVERLAY */}
+      {/* MOBILE OVERLAY */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-40 lg:hidden"

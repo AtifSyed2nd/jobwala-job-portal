@@ -24,11 +24,11 @@ export function ResumeView({ data, onDownload, onDelete, onUpload }: ResumeViewP
         
         <div className="space-y-1">
           <h4 className="text-sm font-bold text-slate-900 break-all">
-            {data.name}
+            {data?.name}
           </h4>
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <Calendar className="w-3 h-3" />
-            <span>Uploaded on {data.date}</span>
+            <span>Uploaded on {data?.date}</span>
           </div>
         </div>
       </div>
