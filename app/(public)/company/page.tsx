@@ -1,8 +1,5 @@
-// app/companys/page.tsx
-// 'use client'
-
 import { SearchBar } from "@/components/general/SearchBar";
-import { JobCard } from "@/components/cards/JobCard";
+import { CompanyCard } from "@/components/cards/CompanyCard"; // Updated Import
 import { FilterSidebar } from "@/components/general/FilterSidebar";
 import { 
   Select, 
@@ -12,37 +9,30 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 
-// Extended mock data to match the "List" feel of the reference
 const COMPANYS = [
   {
     id: "1",
-    title: "React.js, HTML, CSS - UI Developer",
-    companyName: "PSRTEK",
-    location: "Pune",
-    type: "Full Time",
-    salary: "5-10 Lacs PA",
-    status: "OPEN" as const,
-    createdAt: new Date(),
+    name: "PSRTEK",
+    location: "Pune, Maharashtra",
+    industry: "IT Services",
+    employees: "501-1000",
+    activeJobs: 12,
   },
   {
     id: "2",
-    title: "React Native developer For Pune",
-    companyName: "Honeybee Tech Solutions",
+    name: "Honeybee Tech Solutions",
     location: "Pune (Viman Nagar)",
-    type: "Remote",
-    salary: "1-4 Lacs PA",
-    status: "OPEN" as const,
-    createdAt: new Date(),
+    industry: "Software Development",
+    employees: "50-200",
+    activeJobs: 4,
   },
   {
     id: "3",
-    title: "Senior Frontend Engineer",
-    companyName: "TechFlow Systems",
+    name: "TechFlow Systems",
     location: "Remote / Hybrid",
-    type: "Contract",
-    salary: "15-20 Lacs PA",
-    status: "OPEN" as const,
-    createdAt: new Date(),
+    industry: "Cloud Computing",
+    employees: "201-500",
+    activeJobs: 8,
   },
 ];
 
@@ -51,31 +41,21 @@ export default async function SearchPage({
 }: { 
   searchParams: { [key: string]: string | string[] | undefined } 
 }) {
-
-  console.log(searchParams); // ✅ works on server
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
-      {/* Top Search Section - Minimal Version for Search Page */}
       <div className="bg-white border-b py-6 px-4 sticky top-16 z-30">
         <div className="max-w-7xl mx-auto">
-          <SearchBar
-            type="company"
-            />
+          <SearchBar type="company" />
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 mt-8 flex flex-col md:flex-row gap-8">
-        
-        {/* Left: Filters */}
-        <FilterSidebar
-            type="company"
-        />
+        <FilterSidebar type="company" />
 
-        {/* Right: Company Listings */}
         <div className="flex-1 space-y-4">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-sm text-slate-500">
-              Showing <span className="font-bold text-slate-900">1 - 20</span> of 786 companys
+              Showing <span className="font-bold text-slate-900">1 - 3</span> of {COMPANYS.length} companies
             </h1>
             
             <div className="flex items-center gap-2">
@@ -86,34 +66,22 @@ export default async function SearchPage({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="relevance">Relevance</SelectItem>
-                  <SelectItem value="recent">Most Recent</SelectItem>
-                  <SelectItem value="salary">Salary (High to Low)</SelectItem>
+                  <SelectItem value="recent">Recently Added</SelectItem>
+                  <SelectItem value="size">Company Size</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {/* Company Feed */}
           <div className="grid grid-cols-1 gap-4">
             {COMPANYS.map((company) => (
-              // Transform companyName to company for JobCard compatibility
-              <JobCard 
-                key={company.id} 
-                job={{
-                  title: company.title,
-                  company: company.companyName,
-                  location: company.location,
-                  type: company.type,
-                  salary: company.salary,
-                }} 
-              />
+              <CompanyCard key={company.id} company={company} />
             ))}
           </div>
 
-          {/* Pagination Placeholder */}
           <div className="pt-8 flex justify-center">
             <button className="px-6 py-2 border rounded-full text-sm font-semibold hover:bg-white transition-colors">
-              View More Companys
+              View More Companies
             </button>
           </div>
         </div>

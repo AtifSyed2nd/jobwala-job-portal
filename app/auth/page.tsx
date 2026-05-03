@@ -95,7 +95,7 @@ export default page
 //               <div className="bg-blue-600 p-2 rounded-lg text-white font-bold text-xl">JW</div>
 //             </div>
 //             <CardTitle className="text-2xl text-center font-bold tracking-tight text-slate-900">
-//               JobWala Portal
+//               Job Portal
 //             </CardTitle>
 //             <CardDescription className="text-center text-slate-500">
 //               Manage your professional journey
@@ -132,7 +132,7 @@ export default page
 //                 </div>
                 
 //                 <Button className="w-full bg-blue-600 hover:bg-blue-700 h-11" type="submit" disabled={loginMutation.isPending}>
-//                   {loginMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Sign In to JobWala"}
+//                   {loginMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Sign In to Job"}
 //                 </Button>
 //               </CardContent>
 //             </form>

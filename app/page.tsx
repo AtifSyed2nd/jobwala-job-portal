@@ -2,52 +2,47 @@
 import { SearchBar } from "@/components/general/SearchBar";
 import { JobCard } from "@/components/cards/JobCard";
 
-// Dummy data to populate our UI until we connect Prisma
-const FEATURED_JOBS = [
+const JOBS = [
   {
-    id: 1,
-    title: "AI Automations Salesperson",
-    company: "Bagaian and Company",
-    location: "Remote",
-    type: "Hybrid",
-    salary: "INR 80,000/Fixed",
-  },
-  {
-    id: 2,
-    title: "Lead Generation / Outreach Support",
-    company: "Vurke Inc Private Limited",
-    location: "Remote",
-    type: "Contractual",
-    salary: "INR 1500/Hour",
-  },
-  {
-    id: 3,
-    title: "Freelance SEO Executive",
-    company: "KEXENT PAKISTAN",
-    location: "Remote",
-    type: "Freelance",
-    salary: "INR 200/Hour",
-  },
-  {
-    id: 4,
-    title: "SEO Expert - End to End",
-    company: "London School",
-    location: "Remote",
+    id: "1",
+    title: "React.js, HTML, CSS - UI Developer",
+    companyName: "PSRTEK",
+    location: "Pune",
     type: "Full Time",
-    salary: "INR 30,000/Month",
+    salary: "5-10 Lacs PA",
+    status: "OPEN" as const,
+    createdAt: new Date(),
+  },
+  {
+    id: "2",
+    title: "React Native developer For Pune",
+    companyName: "Honeybee Tech Solutions",
+    location: "Pune (Viman Nagar)",
+    type: "Remote",
+    salary: "1-4 Lacs PA",
+    status: "OPEN" as const,
+    createdAt: new Date(),
+  },
+  {
+    id: "3",
+    title: "Senior Frontend Engineer",
+    companyName: "TechFlow Systems",
+    location: "Remote / Hybrid",
+    type: "Contract",
+    salary: "15-20 Lacs PA",
+    status: "OPEN" as const,
+    createdAt: new Date(),
   },
 ];
 
-export default async function Home({ 
-  searchParams 
-}: { 
-  searchParams: { [key: string]: string | string[] | undefined } 
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
-
   console.log(searchParams);
   return (
     <main className="min-h-screen bg-white">
-
       {/* Hero Section */}
       <section className="bg-sky-50 py-20 px-6">
         <div className="max-w-4xl mx-auto text-center space-y-8">
@@ -55,7 +50,7 @@ export default async function Home({
             Your next career move <br className="hidden md:block" />
             <span className="text-blue-700">starts here.</span>
           </h1>
-          
+
           {/* Search Bar Component */}
           <div className="pt-6">
             <SearchBar type="jobs" />
@@ -66,16 +61,34 @@ export default async function Home({
       {/* Featured Jobs Section */}
       <section className="py-16 px-6 max-w-7xl mx-auto">
         <div className="flex justify-between items-end mb-8">
-          <h2 className="text-2xl font-bold text-slate-900">Work on Your Own Terms</h2>
-          <a href="#" className="text-sm font-medium text-slate-600 underline hover:text-slate-900 border-b pb-1">
+          <h2 className="text-2xl font-bold text-slate-900">
+            Work on Your Own Terms
+          </h2>
+          <a
+            href="/jobs"
+            className="text-sm font-medium text-slate-600 underline hover:text-slate-900 border-b pb-1"
+          >
             View all
           </a>
         </div>
 
         {/* CSS Grid for responsive cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {FEATURED_JOBS.map((job) => (
-           <JobCard key={job.id} job={job} />
+        {/* Job Feed */}
+        <div className="grid grid-cols-3 gap-4">
+          {JOBS.map((jobData) => (
+            <JobCard
+              key={jobData.id}
+              hrefType="jobs"
+              // ✅ FIXED: Changed 'job' to 'data' to match your JobCard component definition
+              data={{
+                id: jobData.id,
+                title: jobData.title,
+                company: jobData.companyName,
+                location: jobData.location,
+                type: jobData.type,
+                salary: jobData.salary,
+              }}
+            />
           ))}
         </div>
       </section>

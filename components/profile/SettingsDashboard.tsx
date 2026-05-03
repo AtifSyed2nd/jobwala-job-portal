@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { SectionCard } from "./SectionCard";
 import { toast } from "sonner";
-import { useUserStore } from "@/app/store/useUserStore";
+import { useAuth } from "@/hooks/useAuth";
 
 type TabType = "profile" | "email" | "security" | "notifications";
 
@@ -87,15 +87,32 @@ function SettingWrapper({ title, description, children, onSave }: any) {
 /* --- Tab Content Components with State Logic --- */
 
 function ProfileTab() {
-  const { user, setUser } = useUserStore();
+  const { user, refetchUser } = useAuth();
   const [name, setName] = useState(user?.name || "");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = () => {
-    if (!user) return;
-    setUser({ ...user, name });
-    toast.success("Profile updated", {
-      description: `Your name has been changed to ${name}.`
-    });
+  const handleSave = async () => {
+    if (!user || !name.trim()) return;
+    
+    setIsLoading(true);
+    try {
+      await fetch("/api/users/update-profile", {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      
+      await refetchUser();
+      toast.success("Profile updated", {
+        description: `Your name has been changed to ${name}.`
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update profile");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -111,7 +128,8 @@ function ProfileTab() {
             type="text" 
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+            disabled={isLoading}
+            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50" 
             placeholder="Jane Smith" 
           />
         </div>
@@ -121,19 +139,36 @@ function ProfileTab() {
 }
 
 function EmailTab() {
-  const { user, setUser } = useUserStore();
+  const { user, refetchUser } = useAuth();
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!user) return;
     if (!email.includes("@")) {
       return toast.error("Invalid email", { description: "Please enter a valid email address." });
     }
-    setUser({ ...user, email });
-    toast.success("Email address updated", {
-      description: `A confirmation link has been sent to ${email}.`
-    });
-    setEmail(""); // Clear input after success
+    
+    setIsLoading(true);
+    try {
+      await fetch("/api/users/update-email", {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      
+      await refetchUser();
+      toast.success("Email address updated", {
+        description: `A confirmation link has been sent to ${email}.`
+      });
+      setEmail("");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update email");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -156,7 +191,8 @@ function EmailTab() {
             type="email" 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+            disabled={isLoading}
+            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50" 
           />
         </div>
       </div>

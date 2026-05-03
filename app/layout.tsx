@@ -5,7 +5,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "sonner";
-import { QueryProvider } from "./providers/QueryProvider";
+import { AuthProvider } from "./providers/AuthProvider";
 
 
 
@@ -39,7 +39,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
       <body className="antialiased font-sans bg-slate-50">
-        <QueryProvider>
+        <AuthProvider>
         
         {/* ✅ Navbar handles auth internally */}
         <Navbar />
@@ -54,7 +54,7 @@ export default function RootLayout({
 
         {/* ✅ Toast */}
         <Toaster position="top-right" richColors />
-        </QueryProvider>
+        </AuthProvider>
       </body>
     </html>
   );

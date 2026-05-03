@@ -1,3 +1,10 @@
+/**
+ * ⚠️ DEPRECATED: This store is no longer used
+ * The app has been simplified to use Context API (AuthProvider) instead of Zustand
+ * See app/providers/AuthProvider.tsx for the current authentication setup
+ * Use useAuth() hook from @/hooks/useAuth instead
+ */
+
 "use client";
 
 import { create } from "zustand";
